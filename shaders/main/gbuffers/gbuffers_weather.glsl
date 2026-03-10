@@ -21,7 +21,9 @@
             gl_Position = vec4(-10);
         }
     #else
-        flat out float lmCoordX;
+
+        flat out vec2 lmCoord;
+        flat out vec3 blockLightColor;
 
         out vec2 texCoord;
 
@@ -47,9 +49,12 @@
             #include "/lib/vertex/weatherWave.glsl"
         #endif
 
+        #include "/lib/utility/coloredLighting.glsl"
+
         void main(){
             // Lightmap fix for mods
-            lmCoordX = lightMapCoord(gl_MultiTexCoord1.x);
+            correctedLightMap();
+
             // Get buffer texture coordinates
             texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
@@ -97,7 +102,8 @@
         /* RENDERTARGETS: 4 */
         layout(location = 0) out vec4 sceneColOut; // colortex4
 
-        flat in float lmCoordX;
+        flat in vec2 lmCoord;
+        flat in vec3 blockLightColor;
 
         in vec2 texCoord;
 
@@ -124,7 +130,7 @@
             // Convert to linear space
             albedo.rgb = toLinear(albedo.rgb);
 
-            vec3 totalDiffuse = toLinear(SKY_COLOR_DATA_BLOCK) + toLinear(lmCoordX * blockLightColor) + toLinear(AMBIENT_LIGHTING + nightVision * 0.5);
+            vec3 totalDiffuse = toLinear(SKY_COLOR_DATA_BLOCK) + toLinear(lmCoord.x * blockLightColor) + toLinear(AMBIENT_LIGHTING + nightVision * 0.5);
 
             totalDiffuse += lightningFlash;
 

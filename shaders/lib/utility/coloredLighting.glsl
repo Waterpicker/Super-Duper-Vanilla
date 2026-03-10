@@ -1,25 +1,11 @@
 struct LightData {
-    vec3  lightColor;
-    ivec2 lmCoord;
+    vec3 lightColor;
+    vec2 lmCoord;
 };
 
-vec3 hsv2rgb(vec3 c) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
+LightData decodeLightCoord() {
+    ivec2 rawLm = ivec2(gl_MultiTexCoord1.xy);
 
-vec3 rgb2hsv(vec3 c) {
-    vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
-    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-
-    float d = q.x - min(q.w, q.y);
-    float e = 1.0e-10;// epsilon to prevent division by zero
-    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
-
-LightData decodeLightCoord(ivec2 rawLm) {
     int lsShort   = rawLm.x;
     int msShort   = rawLm.y;
 
@@ -32,33 +18,26 @@ LightData decodeLightCoord(ivec2 rawLm) {
     LightData data;
 
     if (alpha4 == 0xF) {
-        vec3 rgb = pow(vec3(red8, green8, blue8) * 0.003921, vec(1.3));;
-
-        vec3 hsv = rgb2hsv(rgb);
-
-        data.lmCoord.x = int(hsv.z * 16);
-
-        data.lightColor = hsv2rgb(vec3(hsv.xy, 1));
-        data.lmCoord.y   = skyLight4 << 4;
+        data.lmCoord.x  = floor(pow(max(max(red8, green8), blue8) * 0.00392156862745, 1.3) * 240.0);
+        data.lightColor = pow(vec3(red8, green8, blue8) * 0.00392156862745, vec3(1.3)) / max(pow(max(max(red8, green8), blue8) * 0.00392156862745, 1.3), 0.00001);
+        data.lmCoord.y  = float(skyLight4 << 4);
     } else {
-        data.lightColor = vec3(1);
-        data.lmCoord = rawLm;
+        data.lightColor = blockLightColorDefault;
+        data.lmCoord    = rawLm;
     }
 
     return data;
 }
 
-vec2 correctedLightMap(ivec2 rawlm) {
-    LightData data = decodeLightCoord(rawlm.xy);
-
-    vec2 lm;
+void correctedLightMap() {
+    LightData data = decodeLightCoord();
 
     // Lightmap fix for mods
     #ifdef WORLD_CUSTOM_SKYLIGHT
-        lm = vec2(lightMapCoord(data.lmCoord.x), WORLD_CUSTOM_SKYLIGHT);
+        lmCoord = vec2(lightMapCoord(data.lmCoord.x), WORLD_CUSTOM_SKYLIGHT);
     #else
-        lm = lightMapCoord(data.lmCoord.xy);
+        lmCoord = lightMapCoord(data.lmCoord.xy);
     #endif
 
-    return lm;
+    blockLightColor = data.lightColor;
 }

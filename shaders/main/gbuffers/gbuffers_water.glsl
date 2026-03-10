@@ -19,6 +19,7 @@
     flat out int blockId;
 
     out vec2 lmCoord;
+    out vec3 blockLightColor;
     out vec2 texCoord;
     out vec2 waterNoiseUv;
 
@@ -66,6 +67,8 @@
         attribute vec2 mc_midTexCoord;
     #endif
 
+    #include "/lib/utility/coloredLighting.glsl"
+
     void main(){
         // Get block id
         blockId = int(mc_Entity.x);
@@ -75,11 +78,7 @@
         vertexColor = gl_Color.rgb;
 
         // Lightmap fix for mods
-        #ifdef WORLD_CUSTOM_SKYLIGHT
-            lmCoord = vec2(lightMapCoord(gl_MultiTexCoord1.x), WORLD_CUSTOM_SKYLIGHT);
-        #else
-            lmCoord = lightMapCoord(gl_MultiTexCoord1.xy);
-        #endif
+        correctedLightMap();
 
         // Get vertex normal
         vec3 vertexNormal = fastNormalize(gl_Normal);
@@ -148,6 +147,7 @@
     flat in int blockId;
 
     in vec2 lmCoord;
+    in vec3 blockLightColor;
     in vec2 texCoord;
     in vec2 waterNoiseUv;
 

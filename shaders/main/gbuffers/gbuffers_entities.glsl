@@ -19,6 +19,7 @@
     flat out float vertexAlpha;
 
     flat out vec2 lmCoord;
+    flat out vec3 blockLightColor;
 
     flat out vec3 vertexColor;
 
@@ -56,6 +57,8 @@
         attribute vec2 mc_midTexCoord;
     #endif
 
+    #include "/lib/utility/coloredLighting.glsl"
+
     void main(){
         // Get vertex alpha
         vertexAlpha = gl_Color.a;
@@ -65,11 +68,7 @@
         texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 
         // Lightmap fix for mods
-        #ifdef WORLD_CUSTOM_SKYLIGHT
-            lmCoord = vec2(lightMapCoord(gl_MultiTexCoord1.x), WORLD_CUSTOM_SKYLIGHT);
-        #else
-            lmCoord = lightMapCoord(gl_MultiTexCoord1.xy);
-        #endif
+        correctedLightMap();
 
         // Get vertex tangent
         vec3 vertexNormal = fastNormalize(gl_Normal);
@@ -127,6 +126,7 @@
     flat in float vertexAlpha;
 
     flat in vec2 lmCoord;
+    flat in vec3 blockLightColor;
 
     flat in vec3 vertexColor;
 

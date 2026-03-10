@@ -17,6 +17,7 @@
 
 #ifdef VERTEX
     flat out vec2 lmCoord;
+    flat out vec3 blockLightColor;
 
     flat out vec3 vertexColor;
 
@@ -50,7 +51,9 @@
 
         #include "/lib/utility/taaJitter.glsl"
     #endif
-    
+
+    #include "/lib/utility/coloredLighting.glsl"
+
     void main(){
         // Get buffer texture coordinates
         texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
@@ -58,11 +61,7 @@
         vertexColor = gl_Color.rgb;
 
         // Lightmap fix for mods
-        #ifdef WORLD_CUSTOM_SKYLIGHT
-            lmCoord = vec2(lightMapCoord(gl_MultiTexCoord1.x), WORLD_CUSTOM_SKYLIGHT);
-        #else
-            lmCoord = lightMapCoord(gl_MultiTexCoord1.xy);
-        #endif
+        correctedLightMap();
 
         // Get vertex view position
         vec3 vertexViewPos = mat3(gl_ModelViewMatrix) * gl_Vertex.xyz + gl_ModelViewMatrix[3].xyz;
@@ -109,6 +108,7 @@
     layout(location = 1) out vec3 materialDataOut; // colortex3
 
     flat in vec2 lmCoord;
+    flat in vec3 blockLightColor;
 
     flat in vec3 vertexColor;
 

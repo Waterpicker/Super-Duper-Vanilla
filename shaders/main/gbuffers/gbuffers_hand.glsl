@@ -17,6 +17,7 @@
 
 #ifdef VERTEX
     flat out vec2 lmCoord;
+    flat out vec3 blockLightColor;
 
     flat out vec3 vertexColor;
 
@@ -50,6 +51,8 @@
         attribute vec2 mc_midTexCoord;
     #endif
 
+    #include "/lib/utility/coloredLighting.glsl"
+
     void main(){
         // Get buffer texture coordinates
         texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
@@ -57,11 +60,7 @@
         vertexColor = gl_Color.rgb;
 
         // Lightmap fix for mods
-        #ifdef WORLD_CUSTOM_SKYLIGHT
-            lmCoord = vec2(lightMapCoord(gl_MultiTexCoord1.x), WORLD_CUSTOM_SKYLIGHT);
-        #else
-            lmCoord = lightMapCoord(gl_MultiTexCoord1.xy);
-        #endif
+        correctedLightMap();
 
         // Get vertex tangent
         vec3 vertexNormal = fastNormalize(gl_Normal);
@@ -109,6 +108,7 @@
     layout(location = 3) out vec3 materialDataOut; // colortex3
 
     flat in vec2 lmCoord;
+    flat in vec3 blockLightColor;
 
     flat in vec3 vertexColor;
 

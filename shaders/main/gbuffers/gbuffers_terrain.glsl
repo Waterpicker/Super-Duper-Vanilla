@@ -23,6 +23,7 @@
     out float vertexAO;
 
     out vec2 lmCoord;
+    out vec3 blockLightColor;
     out vec2 texCoord;
 
     out vec3 vertexColor;
@@ -82,8 +83,7 @@
         vertexColor = gl_Color.rgb;
 
         // Lightmap fix for mods
-        lmCoord = correctedLightMap(gl_MultiTexCoord1.xy);
-
+        correctedLightMap();
 
         // Get vertex normal
         vec3 vertexNormal = fastNormalize(gl_Normal);
@@ -154,6 +154,7 @@
     in float vertexAO;
 
     in vec2 lmCoord;
+    in vec3 blockLightColor;
     in vec2 texCoord;
 
     in vec3 vertexColor;
