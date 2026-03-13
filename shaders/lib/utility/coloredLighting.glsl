@@ -23,7 +23,7 @@ LightData decodeLightCoord() {
         data.lmCoord.y  = float(skyLight4 << 4);
     } else {
         data.lightColor = blockLightColorDefault;
-        data.lmCoord    = rawLm;
+        data.lmCoord    = vec2(rawLm);
     }
 
     return data;
